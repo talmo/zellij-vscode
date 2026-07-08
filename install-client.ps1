@@ -7,6 +7,23 @@
 # Auto-merge needs PowerShell 7 (pwsh). On Windows PowerShell 5.1 it backs up,
 # prints the block to paste, and opens settings.json.
 $ErrorActionPreference = 'Stop'
+$RAW = 'https://raw.githubusercontent.com/talmo/zellij-vscode/main'
+
+# Prefer the JSONC-aware merger via `uv run` (uv supplies the Python; no system
+# Python is used): it preserves comments/trailing commas and validates before
+# writing. Falls through to the PowerShell merge below when uv is absent.
+if (Get-Command uv -ErrorAction SilentlyContinue) {
+    $merge = Join-Path ([IO.Path]::GetTempPath()) 'merge_settings.py'
+    try {
+        Invoke-WebRequest -UseBasicParsing "$RAW/merge_settings.py" -OutFile $merge
+        & uv run --no-project $merge @args
+        Remove-Item $merge -ErrorAction SilentlyContinue
+        exit $LASTEXITCODE
+    } catch {
+        Remove-Item $merge -ErrorAction SilentlyContinue
+        Write-Host "uv merge unavailable ($_); using PowerShell fallback."
+    }
+}
 
 # The self-contained profile command. Remote-SSH runs this on the *remote*
 # Linux host, so it targets the .linux profile keys.

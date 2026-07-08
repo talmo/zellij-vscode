@@ -28,10 +28,17 @@ Windows (PowerShell):
 
     irm https://raw.githubusercontent.com/talmo/zellij-vscode/main/install-client.ps1 | iex
 
-Merges a `Zellij` profile into your VS Code User `settings.json` (backing it up
-first) and makes it the default Linux profile. Re-running is safe. Requires `jq`
-on macOS/Linux; auto-merge on Windows needs PowerShell 7 (otherwise it prints the
-block to paste). Reload the VS Code window afterward.
+Merges a `Zellij` profile into your VS Code User `settings.json` and makes it the
+default Linux profile, then reload the VS Code window.
+
+The merge (`merge_settings.py`, run via `uv run` — [uv](https://docs.astral.sh/uv/)
+supplies the interpreter, so no system Python is used) is **JSONC-aware**: it
+preserves your comments and trailing commas, edits surgically in place (leaving
+everything else untouched), backs the file up first, and **validates that the
+result parses before writing** — so it cannot corrupt your settings. It's
+idempotent and updates an older profile in place if you set one up manually
+before. If `uv` isn't found, it prints the block for you to paste instead of
+changing anything.
 
 The profile it installs:
 
