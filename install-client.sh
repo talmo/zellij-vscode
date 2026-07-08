@@ -21,7 +21,9 @@ if command -v uv >/dev/null 2>&1; then
   if [ -n "$here" ] && [ -f "$here/merge_settings.py" ]; then
     exec uv run --no-project "$here/merge_settings.py" "$@"   # local clone
   fi
-  merge="$(mktemp)"; trap 'rm -f "$merge"' EXIT               # curl | bash
+  tmpd="$(mktemp -d)"; trap 'rm -rf "$tmpd"' EXIT             # curl | bash
+  merge="$tmpd/merge_settings.py"   # .py name: `uv run` treats it as a script,
+                                    # not an executable to spawn
   curl -fsSL "$RAW/merge_settings.py" -o "$merge"
   uv run --no-project "$merge" "$@"
   exit $?
